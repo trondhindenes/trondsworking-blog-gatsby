@@ -80,9 +80,9 @@ class Layout extends React.Component {
           {` `}
             <a href="https://github.com/trondhindenes/trondsworking-blog-gatsby">https://github.com/trondhindenes/trondsworking-blog-gatsby</a>
           </p>
-          <pr>
+          <p>
             <img alt="build status" src="https://api.netlify.com/api/v1/badges/a34056ab-745b-4c26-9f03-48d40eb308f2/deploy-status"></img>
-          </pr>
+          </p>
 
         </footer>
       </div>
