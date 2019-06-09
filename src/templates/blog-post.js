@@ -64,6 +64,8 @@ class BlogPostTemplate extends React.Component {
         </ul>
         <Disqus
           title={post.title}
+          id={post.id}
+          url={this.props.data.site.siteMetadata.siteUrl}
         />
         {/* <Disqus 
           identifier={post.title}
