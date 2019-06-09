@@ -1,7 +1,7 @@
 ---
 title: Moving to Gatsby
 date: "2019-06-09"
-description: Moving to Gatsby
+description: About moving this site to Gatsby
 ---
 
 I'm moving this site to a new platform, built using Gatsby <https://www.gatsbyjs.org/> and hosted on Netlify <https://www.netlify.com/>. I'm still running it behind Cloudflare, mostly because cloudflare has free DNS hosting for my domain.
