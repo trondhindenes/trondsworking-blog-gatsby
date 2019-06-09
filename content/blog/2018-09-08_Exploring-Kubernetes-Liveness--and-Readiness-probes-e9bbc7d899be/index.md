@@ -12,9 +12,10 @@ _Code and things:_ [_https://github.com/trondhindenes/K8sProbeTester_](https://g
 
 A while back, one of our devs noticed that one of their rest apis were down for a few seconds during deployment, although we felt we had tweaked the deployment manifest and added probes and delays and what not. This led to some back-and-forth, and I never had time to properly sit down and figure stuff out. Until now. Together with my two best friends (coffee and quiet), I decided to sit down and figure out how how these things really work in the exciting but relatively complex world of Kubernetes.
 
-As always, I try and approach a problem by setting up an environment that allows me to iterate as quickly as possible around a problem. The first thing I did was to create a super-simple Docker image with a health endpoint that I can probe from Kubernetes, and add an optional START\_WAIT\_SECS environment variable that I can use to simulate a slow-starting app. Here’s the bare minimum kubernetes manifest I started out with:
+As always, I try and approach a problem by setting up an environment that allows me to iterate as quickly as possible around a problem. The first thing I did was to create a super-simple Docker image with a health endpoint that I can probe from Kubernetes, and add an optional `START_WAIT_SECS` environment variable that I can use to simulate a slow-starting app. Here’s the bare minimum kubernetes manifest I started out with:
 
-\---  
+```
+---  
 kind: Deployment  
 apiVersion: extensions/v1beta1  
 metadata:  
@@ -36,12 +37,14 @@ spec:
       - image: "trondhindenes/k8sprobetester:latest"  
         name: k8sprobetester  
         env:  
-          - name: START\_WAIT\_SECS  
+          - name: START_WAIT_SECS  
             value: '0'
+```
 
 As you’ll notice this is about as simple as it gets, no fancyness of any kind. I’m using my local minikube instance, which means that if I add a service definition, minikube can give me a reachable url:
 
-\---  
+```
+---  
 apiVersion: v1  
 kind: Service  
 metadata:  
@@ -55,16 +58,19 @@ spec:
   - name: http  
     port: 80  
     targetPort: 80
+```
 
-running \`minikube service k8sprobetester\` I get a url back that I can use to test it (your port will likely be different): [http://192.168.99.100:32500/healthz](http://192.168.99.100:32500/healthz).
+running `minikube service k8sprobetester` I get a url back that I can use to test it (your port will likely be different): [http://192.168.99.100:32500/healthz](http://192.168.99.100:32500/healthz).
 
-No we have a lab to test things. I’m also setting the START\_WAIT\_SECS to 15 to simulate a slow-starting app. We also need something to make Kubernetes believe a change needs to be invoked, so I’m adding a second random environment variable that I just keep changing the value of.
+No we have a lab to test things. I’m also setting the `START_WAIT_SECS` to 15 to simulate a slow-starting app. We also need something to make Kubernetes believe a change needs to be invoked, so I’m adding a second random environment variable that I just keep changing the value of.
 
 At this point you can view the rollout from one “version” to the next with the following commands (it’s a good idea to have 4 consoles up, one for each of these:
 
+```
 watch kubectl rollout status deployment k8sprobetester-v1  
 watch kubectl get pods  
 watch curl [http://192.168.99.100:32500/healthz](http://192.168.99.100:32500/healthz)
+```
 
 and one for invoking commands like `kubectl apply.`
 
@@ -72,7 +78,8 @@ In this version of the deployment, there’s no probing going on, and altho we h
 
 The first thing we can do, is to tell Kubernetes something about how it should go about deploying our app. We can do that with a “deployment strategy”, which could look something like this:
 
-\---  
+```
+---  
 kind: Deployment  
 apiVersion: extensions/v1beta1  
 metadata:  
@@ -98,10 +105,11 @@ spec:
       - image: "trondhindenes/k8sprobetester:latest"  
         name: k8sprobetester  
         env:  
-          - name: START\_WAIT\_SECS  
+          - name: START_WAIT_SECS  
             value: '15'  
-          - name: SOME\_OTHER\_VAR  
+          - name: SOME_OTHER_VAR  
             value: yasssd
+```
 
 Here’s we’re specifying that during a rolling update, max 10% of our resources should be unavailable. Kubernetes has some builtin smarts that figures out what 10% means in terms of number of pods. Problem now is that even removing one of our pods would dip us below 10%, so the deployment simply won’t be able to start. Lets adjust it to 40%, wich allows a single pod to be down (you can also use regular numbers instead of percentages, and the default is “1”, according to the kubernetes reference doc).
 
@@ -109,7 +117,8 @@ In itself, this doesn’t matter too much for our deployment, because Kubernetes
 
 Here is the deployment with a LivenessProbe added. Notice that I’ve set the initialDelaySeconds setting to 20, since we know that our app is using 15 seconds to start:
 
-\---  
+```
+---  
 kind: Deployment  
 apiVersion: extensions/v1beta1  
 metadata:  
@@ -135,9 +144,9 @@ spec:
       - image: "trondhindenes/k8sprobetester:latest"  
         name: k8sprobetester  
         env:  
-          - name: START\_WAIT\_SECS  
+          - name: START_WAIT_SECS  
             value: '15'  
-          - name: SOME\_OTHER\_VAR  
+          - name: SOME_OTHER_VAR  
             value: yasss  
         livenessProbe:  
           httpGet:  
@@ -147,6 +156,7 @@ spec:
               - name: Host  
                 value: KubernetesLivenessProbe  
           initialDelaySeconds: 20
+```
 
 This is about the same configuration we were running when the developer came to me with a WTF on his face. How come Kubernetes tears down the running pods before the first one has started? The answer is: We need another type of probe: _readinessProbe._ It turns out that Kubernetes has two separate ways to track the health of a pod, one during deployment, and one after. LivenessProbe is what causes Kubernetes to replace a failed pod with a new one, but it has absolutely no effect during deployment of the app. Readiness probes, on the other hand, are what Kubernetes uses to determine whether the pod started successfully. Let’s add one, with the same settings as the live nessprobe:
 
@@ -160,7 +170,8 @@ But how about tracking actual failures during startup? Lets see how Kubernetes d
 
 The new deployment looks like this:
 
-\---  
+```
+---  
 kind: Deployment  
 apiVersion: extensions/v1beta1  
 metadata:  
@@ -186,11 +197,11 @@ spec:
       - image: "trondhindenes/k8sprobetester:latest"  
         name: k8sprobetester  
         env:  
-          - name: START\_WAIT\_SECS  
+          - name: START_WAIT_SECS  
             value: '15'  
-          - name: CRASH\_FACTOR  
+          - name: CRASH_FACTOR  
             value: '30'  
-          - name: SOME\_OTHER\_VAR  
+          - name: SOME_OTHER_VAR  
             value: yassf  
         livenessProbe:  
           httpGet:  
@@ -208,6 +219,7 @@ spec:
               - name: Host  
                 value: KubernetesLivenessProbe  
           initialDelaySeconds: 20
+```
 
 As you can see, we’ve set the crash factor to 30 (meaning, about 30% of the time the app will crash during startup) and also scaled up the number of replicas to 5.
 
