@@ -5,7 +5,6 @@ import Bio from "../components/bio"
 import Layout from "../components/layout"
 import SEO from "../components/seo"
 import { rhythm, scale } from "../utils/typography"
-import Disqus from 'gatsby-plugin-disqus'
 
 class BlogPostTemplate extends React.Component {
   render() {
@@ -62,16 +61,6 @@ class BlogPostTemplate extends React.Component {
             )}
           </li>
         </ul>
-        <Disqus
-          title={post.title}
-          id={post.id}
-          url={this.props.data.site.siteMetadata.siteUrl}
-        />
-        {/* <Disqus 
-          identifier={post.title}
-          title={post.title}
-          url={`${this.props.data.site.siteMetadata.siteUrl}${this.props.location}`}
-        /> */}
       </Layout>
     )
   }
