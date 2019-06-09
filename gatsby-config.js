@@ -2,7 +2,7 @@ module.exports = {
   siteMetadata: {
     title: `Trond's Working!`,
     author: `Trond Hindenes`,
-    description: `Rancom posts about computers n stuff`,
+    description: `Random posts about computers n stuff`,
     siteUrl: `https://www.hindenes.com`,
     social: {
       twitter: `trondhindenes`,
@@ -57,8 +57,8 @@ module.exports = {
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
-        name: `Gatsby Starter Blog`,
-        short_name: `GatsbyJS`,
+        name: `Trond's Working RSS feed`,
+        short_name: `TrondsWorking`,
         start_url: `/`,
         background_color: `#ffffff`,
         theme_color: `#663399`,

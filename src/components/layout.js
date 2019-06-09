@@ -63,15 +63,27 @@ class Layout extends React.Component {
         <header>{header}</header>
         <main>{children}</main>
         <footer>
-          © {new Date().getFullYear()}, Built with
+          <hr></hr>
+          <p>
+            © {new Date().getFullYear()}, Built with
           {` `}
-          <a href="https://www.gatsbyjs.org">Gatsby</a>
+            <a href="https://www.gatsbyjs.org">Gatsby</a>
+            {` `}
+            and hosted on
           {` `}
-          and hosted on 
+            <a href="https://www.netlify.com/ ">Netlify</a>
+            {`/`}
+            <a href="https://www.cloudflare.com/ ">Cloudflare</a>
+          </p>
+          <p>
+            Source code for this site can be found here:
           {` `}
-          <a href="https://www.netlify.com/ ">Netlify</a>
-          {`/`}
-          <a href="https://www.cloudflare.com/ ">Cloudflare</a>
+            <a href="https://github.com/trondhindenes/trondsworking-blog-gatsby">https://github.com/trondhindenes/trondsworking-blog-gatsby</a>
+          </p>
+          <pr>
+            <img alt="build status" src="https://api.netlify.com/api/v1/badges/a34056ab-745b-4c26-9f03-48d40eb308f2/deploy-status"></img>
+          </pr>
+
         </footer>
       </div>
     )
