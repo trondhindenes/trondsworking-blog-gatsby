@@ -38,7 +38,7 @@ function Bio() {
               }}
             />
             <p>
-              I'm <strong>{author}</strong>, SRE Lead at RiksTV. Fan of Python, drones, cloud and snowboarding.
+              Hi, I'm <strong>{author}</strong>, SRE Lead at RiksTV. Fan of Python, drones, cloud and snowboarding.
               {` `}
               <a href={`https://twitter.com/${social.twitter}`}>
                 I haz twitter.
