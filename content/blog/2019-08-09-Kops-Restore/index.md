@@ -38,6 +38,7 @@ This is the tricky bit.
 3. Exec into the "leader" container using docker exec
 Run the following (it installs the etcd-manager-ctl binary):
 ```bash
+#NOTE if using a different etcd-manager version, adjust the download link accordingly. It should matche the version of the /etcd-manager in the same container
 apt-get update && apt-get install -y wget
 wget https://github.com/kopeio/etcd-manager/releases/download/3.0.20190801/etcd-manager-ctl-linux-amd64
 mv etcd-manager-ctl-linux-amd64 etcd-manager-ctl
