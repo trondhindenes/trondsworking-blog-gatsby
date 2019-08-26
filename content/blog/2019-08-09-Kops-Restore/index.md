@@ -60,4 +60,19 @@ mv etcd-manager-ctl /usr/local/bin/
 ### Cleanup
 Delete any non-existing nodes. There are probably 3 non-existing master nodes.
 
+Check the status of the `kubernetes` endpoint:
+`kubectl -n default get endpoints kubernetes -o=yaml`. We noticed that this endpoint kept containing addresses of old (deleted) masters, even after deleting it and letting the cluster recreate it. This is a potential problem for pods interacting with the Kubernetes api. If this command shows ip addresses which do not belong to current masters, there's some more cleanup to do. Exec into a pod running the `etcd-main` cluster (which one doesn't matter): `kubectl -n kube-system get pods | grep etcd-manager-main`.
+
+Run this command to get the `master lease` list from etcd:
+```bash
+#Adjust the etcd path as necessary
+ETCDCTL_API=3 /opt/etcd-v3.2.24-linux-amd64/etcdctl --key /rootfs/etc/kubernetes/pki/kube-apiserver/etcd-client.key --cert /rootfs/etc/kubernetes/pki/kube-apiserver/etcd-client.crt --cacert /rootfs/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt --endpoints=https://127.0.0.1:4001 get --prefix /registry/masterleases/
+```
+The output from this command _should_ match your master list. If it doesn't, remove the redundant entries, for example like this:
+```bash
+ETCDCTL_API=3 /opt/etcd-v3.2.24-linux-amd64/etcdctl --key /rootfs/etc/kubernetes/pki/kube-apiserver/etcd-client.key --cert /rootfs/etc/kubernetes/pki/kube-apiserver/etcd-client.crt --cacert /rootfs/etc/kubernetes/pki/kube-apiserver/etcd-ca.crt --endpoints=https://127.0.0.1:4001 del /registry/masterleases/10.245.21.57
+```
+
+After that's done, retry the `kubectl -n default get endpoints kubernetes -o=yaml` command. It should now list only ip addresses for your current master nodes.
+
 That's it! We're using the Traeik ingress controller, and since Traefik will hang on to its last known config in the case of apiserver issues, we actually stay online thru the entire process. Test first in non-prod!
