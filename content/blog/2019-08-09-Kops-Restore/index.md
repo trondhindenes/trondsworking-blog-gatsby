@@ -21,7 +21,7 @@ Here's what you'll do:
 2. Let kops recreate masters
 3. Restore data
 
-It is assumed that you run kops on AWS, and that the "kops state store" s3 bucket has at least one good backup you can use to restore. Etcd-manager will create new backups on regular intervals, at least once per day I think. So all you need to do is to make sure you have at least one (see details below regarding where in S3 these backups are located).
+It is assumed that you run kops on AWS, and that the "kops state store" s3 bucket has at least one good backup you can use to restore. Etcd-manager automatically creates new backups on regular intervals, at least once per day I think. So all you need to do is to make sure you have at least one (see details below regarding where in S3 these backups are located).
 
 ### Wipe masters
 NOTE: Once you do this, there's no turning back. Your cluster will be unavailable during the rest of the process. Depending on your choice of ingress/load balancer setup, services running on your cluster may be down.
