@@ -21,7 +21,7 @@ Here's what you'll do:
 2. Let kops recreate masters
 3. Restore data
 
-It is assumed that you run kops on AWS, and that the "kops state store" s3 bucket has at least one good backup you can use to restore.
+It is assumed that you run kops on AWS, and that the "kops state store" s3 bucket has at least one good backup you can use to restore. Etcd-manager will create new backups on regular intervals, at least once per day I think. So all you need to do is to make sure you have at least one (see details below regarding where in S3 these backups are located).
 
 ### Wipe masters
 NOTE: Once you do this, there's no turning back. Your cluster will be unavailable during the rest of the process. Depending on your choice of ingress/load balancer setup, services running on your cluster may be down.
@@ -32,6 +32,8 @@ Perform deleting by simply deleting the 3 "master" autoscaling groups in AWS. On
 use `kops update` to converge the cluster. Kops will determine that masters are missing, and provision them. If you want to change instance type for your masters, make the change _before_ running kops update so you don't have to perform a rolling update later.
 
 ### Perform the restore
+*NOTE: It is possible to run the `etcd-manager-ctl` commands outlined below locally. The reason I document the (more complicated) "run-from-inside-docker" method is to avoid having to be stuck by s3 permission issues etc. The procedure below _should_ work every time, but you're of course free to come up with a better way that works for you. The important thing is that you restore the `etcd-main` and `etcd-events` databases. So there.*
+
 This is the tricky bit.
 1. ssh into each master. Wait until all 3 masters have 2 containers called something related to "etcd". There should be one "etcd-main" and one "etcd-evets" container. There will be 2 "pause" containers aswell, you can disregard these. etcd-main and etcd-events represent 2 separate etcd clusters that run on the master node. We'll restore each in turn.Lets do etcd-main first
 2. Find out which of the masters run an etcd-main container which is currently cluster leader. It will have output along the lines of "restore needs to be performed". The non-leader containers will simply write "not leader" or similar over and over.
