@@ -18,6 +18,8 @@ Since the jwt header "follows" requests all over the place, we decided to add a 
 ## Why Lambda@Edge
 Traefik is awesome in that it can make routing decisions based on a lot of request attributes. If header `xyz` is set, route to backend `A`, if not route to backend `B` and so on. However, it is _not_ able to decode a jwt token and make routing decisions based on it. So, we needed `something` to decode the jwt and optionally add some information Traefik could understand (such as a request header) _before_ the request passed thru Traefik. We decided on Lambda@edge here. I won't go into detail about Lambda@edge, but think of it as tiny serverless functions that can execute on the edge of the network in the context of an incoming request. So, requests are inspected by Lambda@edge, and if the decoded jwt header contains the `beta` attribute, we add a `X-RiksTV-Beta: true` header to the request before passing it on to the AWS ALB.
 
+Sidenote: We also experimented with placing the Launch Darkly logic in Lambda@Edge. However, since these functions are super-lightweight and with no state/cache, the performance hit was simply more than we were willing to accept.
+
 ## Driving routing configuration using Consul Tags
 I've written about our Consul/Traefik stuff before (there's even a video of it in Traefik's youtube channel), but essentially tags on the Consul service for each api server is used to dynamically configure Traefik.
 
@@ -31,4 +33,6 @@ Traefik evaluates rules ordered by length, the longest will be evaluated first. 
 ## Piecing together the , um, pieces
 So, as a developer I can log into Launch Darkly and mark myself as a "beta" user. I refresh my credentials in whatever app I want to test from, and from there I know that my requests will hit the "beta" instance, which typically will run a newer release of our api code. We have logging attributes that allow us to sepearate "regular" from "beta" traffic, so that we can compare response times and similar.
 
-I'm really stoked about this, as I think it will solve a bunch of headaches, and enable real-life testing of changes without affecting paying customers. Even tho this api is running on regular (old-school) Windows VMs, its still possible build a modern request routing flow.
+Another sidenote: Since we now route traffic into CloudFront (a requirement for using Lambda@Edge), requests are actually travelling via AWS' transit network to the ALB instead of just riding along on the Internet. This has actually made requests measurably faster. Double bonus!!
+
+I'm really stoked about all of this this, as I think it will solve a bunch of headaches, and enable real-life testing of changes without affecting paying customers. Even tho this api is running on regular (old-school) Windows VMs, its still possible build a modern request routing flow.
